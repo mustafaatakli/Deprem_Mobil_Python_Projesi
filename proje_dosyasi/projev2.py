@@ -345,19 +345,4 @@ while True:
     else:
         print(sozluk2["uyarimesaj"])
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     
