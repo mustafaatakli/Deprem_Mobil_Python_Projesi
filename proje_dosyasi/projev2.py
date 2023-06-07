@@ -1,3 +1,4 @@
+#acil durum menüsü
 def govde():
     j=1
     while True:
@@ -11,224 +12,231 @@ def govde():
         aldeger = input("")
         if aldeger == "1":
                 bilgi1 = "Tarafınızdan alınan bilgiler doğrultusunda bulunduğunuz konuma en kısa sürede ulaştırılmak üzere ekipler yönlendirilmiştir."
-                print(sozluk["kamuspotu"])
                 print(bilgi1)
+                print(sozluk["kamuspotu"])
                 break
         elif aldeger == "2":
-                demet0 = ('Depremzede yakını bilgisi almak istiyorsanız 1^i tuşlayınız.','Kayıp evcil hayvanınız hakkında bilgi almak için lütfen 2^yi tuşlayınız :')
+                demet0 = ("""Depremzede bilgisi almak istiyorsanız 1'i tuşlayınız.""","""Kayıp evcil hayvanınız hakkında bilgi almak için lütfen 2'yi tuşlayınız :""")
                 print(demet0[0])
                 print(demet0[1])
                 soru_bilgi = input()
-                k=1
-                while True:
-                    k += 1
-                    if soru_bilgi == "1":
-                        isim11 = input("Yakını olduğunuz depremzedenin ismini giriniz: ")
-                        soyisim11 = input("Yakını olduğunuz depremzedenin soyismini giriniz: ")
-                        if isim11 == isim1 and soyisim11 == soyisim1:
-                            print(isim11,soyisim11,"isimli kişinin durumu: ",sonuc2)
-                            break      
-                    elif soru_bilgi == "2":
-                        hirk1 = input("Evcil hayvanınız cinsini giriniz: ")
-                        hrenk1 = input("Evcil hayvanınızın rengini giriniz: ")
-                        if hirk1 == hirk and hrenk1 == hrenk:
-                            print(hirk1,"ırkına sahip",hrenk1,"renkli","evcil hayvanınızın durumu: ",sonuc3)
-                            break
-        
-                            break   
-                        else:
-                            print(sozluk2["uyarimesaj"])
-                            continue
-    
+                if soru_bilgi == "1":
+                    DepremzedeBigileri.kisi_oku()
+                    break
+                elif soru_bilgi == "2":
+                    KayipHayvanBilgisi.h_oku()
+                    break
+                else:
+                    print(sozluk2["uyarimesaj"])
+                    continue
         elif aldeger == "3":
-                soru10 = input("Sizlere daha etkin ve hızlı yardımcı olabilmemiz adına ihtiyaç taleplerinizi bu ekrandan bizimle yazılı olarak paylaşır mısınız? \n")
+                TalepBilgiFormu.talep_kaydet()
                 print("Talepleriniz alınmış olup en kısa zamanda tarafınıza aktarılacaktır.")
                 print(sozluk["kamuspotu"])
                 break
         elif aldeger == "4": 
-                read_status()
-                #print(sonuc4)
+                durum1.durum_oku()
                 break
         elif aldeger == "5":
-                durum_oku()
-                #print("Yeni guncellenmiş durum açıklaması: ",sonuc5)
+                durum2.durum_oku()
                 break
         elif aldeger == "6":
-                durum_okuv3()
-                #print("Yeni Son Durum: ",sonuc6)
+                durum3.durum_oku()
                 break
         else:
             print(sozluk2["uyarimesaj"])
             continue
+        
+                
+#Admin panelini açarak Sqlite3 ile oluşturduğum depremde hasar alan binaların kaydedildiği,
+#deprem bölgesine gidecek gönüllüler hakkında bilgilerin tutulduğu ve deprem bölgesine
+#gidecek araçlara yollar hakkında verilen bilgilerin tutulduğu veritabanı('database11.db')
 
-
-
-#Sqlite3 ile oluşturduğum depremde hasar alan binaların kaydedildiği veritabanı('database.db')
 import sqlite3
 
-def create_table():
-    conn = sqlite3.connect('database.db')
-    cursor = conn.cursor()
+class DurumYonetimi:
+    
+    def __init__(self):
+        self.conn = sqlite3.connect('database11.db')
+        self.cursor = self.conn.cursor()
+        self.tablo_olustur()
 
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS Durumlar (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            durum TEXT
-        )
-    ''')
+    #tablo ouştur
+    def tablo_olustur(self):
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS Durumlar (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                durum TEXT
+            )
+        ''')
+        self.conn.commit()
 
-    conn.commit()
-    conn.close()
+    #kullanıcı kaydı yap
+    def durum_ekle(self):
+        t=0
+        while True:
+            t+=1
+            status = input("Son durumu girin: ")
+            self.cursor.execute('INSERT INTO Durumlar (durum) VALUES (?)', (status,))
+            self.conn.commit()
+            print("Durum kaydedildi!")
+            break
+        
+    #kayıtlı kullanıcı bilgilerini oku
+    def durum_oku(self):
+        self.cursor.execute('SELECT * FROM Durumlar')
+        rows = self.cursor.fetchall()
 
-def insert_status():
-    status = input("Durumunuzu girin: ")
+        if len(rows) > 0:
+            print("Sırasıyla Sisteme Girilen Durumlar:")
+            for row in rows:
+                print(f"Durum ID: {row[0]}, Son Durum: {row[1]}")
+        else:
+            print("Kaydedilmiş bir durum bulunmamaktadır.")
 
-    conn = sqlite3.connect('database.db')
-    cursor = conn.cursor()
+    def close_connection(self):
+        self.cursor.close()
+        self.conn.close()
+        
+durum1=DurumYonetimi()
+durum1.tablo_olustur()
 
-    cursor.execute('INSERT INTO Durumlar (durum) VALUES (?)', (status,))
-    conn.commit()
+durum2=DurumYonetimi()
+durum2.tablo_olustur()
 
-    print("Durum kaydedildi!")
-
-    conn.close()
-
-def read_status():
-    conn = sqlite3.connect('database.db')
-    cursor = conn.cursor()
-
-    cursor.execute('SELECT * FROM Durumlar')
-    rows = cursor.fetchall()
-
-    if len(rows) > 0:
-        print("Durumlar:")
-        for row in rows:
-            print(f"Durum ID: {row[0]}, Durum: {row[1]}")
-    else:
-        print("Kaydedilmiş bir durum bulunmamaktadır.")
-
-    conn.close()
-
-create_table()
-
-
-
-#Sqlite3 ile oluşturduğum deprem bölgesine gidecek gönüllüler hakkında bilgilerin veritabanı('databasev2.db')
-import sqlite3
-
-def tablo_olustur():
-    conn = sqlite3.connect('databasev2.db')
-    cursor = conn.cursor()
-
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS Durumlar (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            durum TEXT
-        )
-    ''')
-
-    conn.commit()
-    conn.close()
-
-def durum_ekle():
-    status = input("Durumunuzu girin: ")
-
-    conn = sqlite3.connect('databasev2.db')
-    cursor = conn.cursor()
-
-    cursor.execute('INSERT INTO Durumlar (durum) VALUES (?)', (status,))
-    conn.commit()
-
-    print("Durum kaydedildi!")
-
-    conn.close()
-
-def durum_oku():
-    conn = sqlite3.connect('databasev2.db')
-    cursor = conn.cursor()
-
-    cursor.execute('SELECT * FROM Durumlar')
-    rows = cursor.fetchall()
-
-    if len(rows) > 0:
-        print("Durumlar:")
-        for row in rows:
-            print(f"Durum ID: {row[0]}, Durum: {row[1]}")
-    else:
-        print("Kaydedilmiş bir durum bulunmamaktadır.")
-
-    conn.close()
-
-tablo_olustur()
+durum3=DurumYonetimi()
+durum3.tablo_olustur()
 
 
-#Sqlite3 ile oluşturduğum, deprem bölgesine gidecek araçlara yollar hakkında bilgilerin veritabanı('databasev3.db')
-import sqlite3
+#Sqlite3 ile oluşturduğum depremzede durum bilgilerinin kaydedildiği veritabanı('database22.db')
 
-def tablo_olusturv3():
-    conn = sqlite3.connect('databasev3.db')
-    cursor = conn.cursor()
+class DepremzedeBigileri:
+    @classmethod
+    def create_table(cls):
+        conn = sqlite3.connect('database22.db')
+        cursor = conn.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS Depremzedeler (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ad TEXT,
+                soyad TEXT,
+                durumu TEXT
+            )
+        ''')
+        conn.commit()
+        conn.close()
 
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS Durumlar (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            durum TEXT
-        )
-    ''')
+    @classmethod
+    def kisi_kaydet(cls):
+        ad = input("Depremzede ismini girin: ")
+        soyad = input("Depremzede soyismini girin: ")
+        durumu = input("Depremzede durumunu girin: ")
 
-    conn.commit()
-    conn.close()
+        conn = sqlite3.connect('database22.db')
+        cursor = conn.cursor()
+        cursor.execute('INSERT INTO Depremzedeler (ad, soyad, durumu) VALUES (?, ?, ?)', (ad, soyad, durumu))
+        conn.commit()
+        conn.close()
+        print("Depremzede bilgileri kaydedildi!")
 
-def durum_eklev3():
-    status = input("Yol-Trafik Durumunu Girin: ")
+    @classmethod
+    def kisi_oku(cls):
+        conn = sqlite3.connect('database22.db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM Depremzedeler')
+        rows = cursor.fetchall()
+        conn.close()
 
-    conn = sqlite3.connect('databasev3.db')
-    cursor = conn.cursor()
+        if rows:
+            for row in rows:
+                print(f"Depremzede Bilgileri; Ad: {row[1]}, Soyad: {row[2]}, Durumu: {row[3]}")
+        else:
+            print("Veritabanında kayıtlı depremzede bilgisi bulunamadı.")
 
-    cursor.execute('INSERT INTO Durumlar (durum) VALUES (?)', (status,))
-    conn.commit()
-
-    print("Durum kaydedildi!")
-
-    conn.close()
-
-def durum_okuv3():
-    conn = sqlite3.connect('databasev3.db')
-    cursor = conn.cursor()
-
-    cursor.execute('SELECT * FROM Durumlar')
-    rows = cursor.fetchall()
-
-    if len(rows) > 0:
-        print("Durumlar:")
-        for row in rows:
-            print(f"Durum ID: {row[0]}, Durum: {row[1]}")
-    else:
-        print("Kaydedilmiş bir durum bulunmamaktadır.")
-
-    conn.close()
-
-tablo_olusturv3()
-
+DepremzedeBigileri.create_table()
 
 
-#depremzede durum bilgisi save ve read fonksiyonu
-def vgiriş2():
-    durum1 = input("Durumu Giriniz: ")
-    print("Guncellenen durum:",isim1,soyisim1,"isimli kişinin durumu",durum1)
-    return durum1
-#kayıp hayvan bilgi fonksiyonu
-def vgiriş3():
-    durum2 = input("Durumu Giriniz: ")
-    print("Guncellenen durum: ",hirk,"cinsinli",hrenk,"rengine sahip hayvanınızın durumu: ",durum2)
-    return durum2
+#Sqlite3 ile oluşturduğum kayıp hayvan bilgilerinin tutulduğu veritabanı('database33.db')
 
+class KayipHayvanBilgisi:
+    @classmethod
+    def create_table1(cls):
+        conn = sqlite3.connect('database33.db')
+        cursor = conn.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS KayipHayvanlar (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                cins TEXT,
+                renk TEXT,
+                durumu TEXT
+            )
+        ''')
+        conn.commit()
+        conn.close()
+
+    @classmethod
+    def h_kaydet(cls):
+        cins = input("Kayıp hayvan cinsini girin: ")
+        renk = input("Kayıp hayvan rengini girin: ")
+        durumu = input("Kayıp hayvan durumunu girin: ")
+
+        conn = sqlite3.connect('database33.db')
+        cursor = conn.cursor()
+        cursor.execute('INSERT INTO KayipHayvanlar (cins, renk, durumu) VALUES (?, ?, ?)', (cins, renk, durumu))
+        conn.commit()
+        conn.close()
+        print("Kayip evcil hayvan bilgileri kaydedildi!")
+
+    @classmethod
+    def h_oku(cls):
+        conn = sqlite3.connect('database33.db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM KayipHayvanlar')
+        rows = cursor.fetchall()
+        conn.close()
+
+        if rows:
+            for row in rows:
+                print(f"Kayip Hayvan Bilgileri; Cinsi: {row[1]}, Rengi: {row[2]}, Durumu: {row[3]}")
+        else:
+            print("Veritabanında kayıtlı kayıp hayvan bilgisi bulunamadı.")
+
+KayipHayvanBilgisi.create_table1()
+
+
+#Sqlite3 ile oluşturduğum ihtiyaç taleplerinin tutulduğu veritabanı('database44.db')
+
+class TalepBilgiFormu:
+    @classmethod
+    def create_table2(cls):
+        conn = sqlite3.connect('database44.db')
+        cursor = conn.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS IhtiyacTalepleri (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                soru10 TEXT
+            )
+        ''')
+        conn.commit()
+        conn.close()
+
+    @classmethod
+    #depremzede ihtiyaç taleplerini veritabanına kaydet
+    def talep_kaydet(cls):
+        soru10 = input("Sizlere daha etkin ve hızlı yardımcı olabilmemiz adına ihtiyaç taleplerinizi bu ekrandan bizimle yazılı olarak paylaşır mısınız? \nTalebiniz: ")
+        conn = sqlite3.connect('database44.db')
+        cursor = conn.cursor()
+        cursor.execute('INSERT INTO IhtiyacTalepleri (soru10) VALUES (?)', (soru10,))
+        conn.commit()
+        conn.close()
+        print("Talebiniz kaydedildi!")
+
+TalepBilgiFormu.create_table2()
 
 
 #pandas kütüphanesi ile xlsx dosya formatındaki dosyaya kayıt yapan register(kayıt) ekranı
 import pandas as pd
 def register():
-
     ad = input("Adınızı giriniz: ")
     soyad = input("Soyadınızı giriniz: ")
     sifre = input("Şifrenizi giriniz: ")
@@ -237,7 +245,6 @@ def register():
     df = pd.DataFrame(kisi, index=[0])
     df.to_excel('users.xlsx', index=False)
     print("Kullanıcı kaydı başarıyla oluşturulmuştur.")
-#register()
 
 #pandas kütüphanesi ile xlsx dosya formatındaki dosyaya login(giriş) yapan ekran
 def login():
@@ -254,7 +261,6 @@ def login():
             break
         else:
             print("Geçersiz ad, soyad veya şifre. Lütfen Tekrar deneyin.")
-#login()
         
 #pandas kütüphanesi ile xlsx dosya formatındaki dosyada reset işlemini yapan ekran
 def reset():
@@ -263,23 +269,25 @@ def reset():
     soyad = input("Lütfen soyadınızı girin: ")
 
     kullanici = data[(data['Ad'] == ad) & (data['Soyad'] == soyad)]
-    if input("Sifrenizi öğrenmek ister misiniz? (E/H)") == "E":
+    if input("Sifrenizi öğrenmek ister misiniz? (e/h)") == "E":
         yeni_sifre = input("Yeni şifrenizi girin: ")
         data.loc[(data['Ad'] == ad) & (data['Soyad'] == soyad), 'Şifre'] = yeni_sifre
         data.to_excel("users.xlsx", index=False)
         print("Şifreniz başarıyla güncellendi!")
     else:
         print("Merhaba {} {}, sifreniz: {}".format(ad, soyad, kullanici['Şifre'].values[0]))
-#reset()
-
 
 
 sozluk = {"kamuspotu":"---El Ele Türkiye!---"}
 
-sozluk2 = {"uyarimesaj":"Yanlış tuşlama yaptınız! Lütfen tekrar deneyiniz."}
+sozluk2 = {"uyarimesaj":"Yanlış tuşlama yaptınız! Lütfen tekrar deneyiniz.\n"}
 
 sozluk3 = {"girismesaj":"MERHABA DEPREM MOBİL UYGULAMASINA HOŞ GELDİNİZ."}
 
+sozluk4 = {"bilgimesaj":"\nYeni oturum için geri ana menüye yönlendiriliyorsunuz..."}
+
+
+#menü icin admin-kullanıcı giris paneli
 print(sozluk3["girismesaj"])
 
 x=1
@@ -290,59 +298,57 @@ while True:
         i=1
         while True:
             i+=1
-            liste01 = ["\n(2)-> Depremzede yakını bilgisi gir.","(3)-> Kayıp evcil hayvan bilgisi gir.","(4)-> Hasarlı bina bilgisi gir.","(5)-> Gönüllü destekleri bilgileri gir.","(6)-> Deprem bölgesi için yol-trafik bilgisi gir."]
+            liste01 = ["\n(2)-> Depremzede yakını bilgisi gir.","(3)-> Kayıp evcil hayvan bilgisi gir.","(4)-> Hasarlı bina bilgisi gir.","(5)-> Gönüllü destekleri bilgileri gir.","(6)-> Deprem bölgesi için yol-trafik bilgisi gir.","(7)-> Ana Menüye Dön.","*Yanlış bir tuşlama yapmanız durumunda tekrardan tuşlama yapmanız istenecektir.\n"]
             for z in liste01:
                 print(z)
-            vgiriş = input("uygulamada veri girişi yapılabilen 5 ana başlıktan (2,3,4,5,6) lütfen birini tuşlayınız: ")
+            vgiriş = input("lütfen uygulamada veri girişi yapılabilen 5 ana başlıktan (2,3,4,5,6) birini veya 'Ana Menüye Dönmek İçin 7'yi tuşlayınız: ")
             if  vgiriş == "2":
-                isim1 = input("İsim: ")
-                soyisim1 = input("Soyisim: ")
-                sonuc2 = vgiriş2()
-                break
+                DepremzedeBigileri.kisi_kaydet()
+                continue    
             elif vgiriş == "3":
-                hirk = input("Kurtarılan evcil hayvanın cinsini giriniz: ")
-                hrenk = input("Kurtarılan evcil hayvanın rengini giriniz: ")
-                sonuc3 = vgiriş3()
-                break
+                KayipHayvanBilgisi.h_kaydet()
+                continue
             elif vgiriş == "4":
-                insert_status()
-                break      
-            elif vgiriş == "6":
-                durum_eklev3()
-                break
+                durum1.durum_ekle()
+                continue
             elif vgiriş == "5":
-                durum_ekle()
+                durum2.durum_ekle()
+                continue
+            elif vgiriş == "6":
+                durum3.durum_ekle()
+                continue
+            elif vgiriş == "7":
+                print("Ana menüye yönlendiriliyorsunuz...")
                 break
             else:
                 print(sozluk2["uyarimesaj"])
                 continue
 
     elif giriş == "kullanıcı":
-       
-        liste2 = ["Sisteme üye olmak için 1","Sisteme Giriş Yapmak için 2","Şifremi unuttum için 3'ü tuşlayınız."]
-        for i in liste2:
-            print(i) 
-    deger = input("")
-    if deger == "1":
-                j=1
-                while True:
-                    j += 1
-                    register()
-                    break
-                    govde()
-                    break
-
-    elif deger == "2":
-        n=1
+        v=1
         while True:
-            n += 1
-            login()
-            govde()
-            break
-    elif deger == "3":  
-        
-        reset()
+            v+=1
+            liste2 = ["Sisteme üye olmak için 1","Sisteme Giriş Yapmak için 2","Şifremi unuttum için 3'ü tuşlayınız."]
+            for i in liste2:
+                print(i) 
+            deger = input("")
+            if deger == "1":
+                register()
+                print("\n")
+                govde()
+                print(sozluk4["bilgimesaj"])
+                break
+            elif deger == "2":
+                login()
+                govde()
+                print(sozluk4["bilgimesaj"])
+                break
+            elif deger == "3":  
+                reset()
+            else:
+                print(sozluk2["uyarimesaj"])
+                continue           
     else:
         print(sozluk2["uyarimesaj"])
+        continue     
 
-    
